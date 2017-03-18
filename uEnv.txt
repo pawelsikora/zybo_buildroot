@@ -1,0 +1,15 @@
+bootargs=root=/dev/mmcblk0p2 rootwait rw rootfstype=ext4
+fpga_image=system.bit
+fpgaboot=if fatload mmc 0 0x1000000 ${fpga_image}; then echo Booting FPGA from ${fpga_image}; fpga info 0 && fpga loadb 0 0x1000000 $filesize; else echo FPGA image ${fpga_image} was not found, skipping...; fi;
+kernel_image=uImage
+sdboot=echo Booting from SD...; run fpgaboot; fatload mmc 0 0x1000000 ${kernel_image} && fatload mmc 0 0x2000000 zynq-zybo.dtb && bootm 0x1000000 - 0x2000000
+ipaddr=192.168.0.121
+serverip=192.168.0.101
+uimage_addr=0x700000
+dtb_addr=0x600000
+rootfs_addr=0x20000000
+dwl_uimage=tftpboot ${uimage_addr} images/uImage
+dwl_rootfs=tftpboot ${rootfs_addr} images/rootfs.cpio.uboot
+dwl_dtb=tftpboot ${dtb_addr} images/zynq-zybo.dtb
+dwl_all=echo Booting from tftp...; run dwl_uimage; run dwl_dtb; run dwl_rootfs
+bootnet=run dwl_all; bootm ${uimage_addr} ${rootfs_addr} ${dtb_addr}
